@@ -1,13 +1,16 @@
 library(DESeq2)
 library(data.table)
 
+# register parallel processors
+BiocParallel::register(BiocParallel::MulticoreParam(8))
+
 # load deseq objects
 dds_aru <- readRDS("output/dds_aru.Rds")
 dds_no_aru <- readRDS("output/dds_no_aru.Rds")
 
 # run deseq
-dds_aru <- DESeq(dds_aru)
-dds_no_aru <- DESeq(dds_no_aru)
+dds_aru <- DESeq(dds_aru, parallel = TRUE)
+dds_no_aru <- DESeq(dds_no_aru, parallel = TRUE)
 
 # generate complete results table
 ExtractResultsForContrast <- function(denominator_level,
@@ -52,10 +55,11 @@ merge(p_matrix,
       by = "gene_name",
       suffixes = c("_padj", "_log2FoldChange"))
 
-
+# write the full results
 fwrite(results_table, "output/complete_results_table.csv")
 saveRDS(results_table, "output/complete_results_table.Rds")
 
-
-
-
+# write results per contrast
+lapply(results_table[, unique(contrast_name)], function(x)
+    fwrite(results_table[contrast_name == x],
+           paste0("output/contrasts/", x, ".csv")))
