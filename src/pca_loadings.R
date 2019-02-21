@@ -4,6 +4,7 @@ library(ggplot2)
 
 dds_aru <- readRDS("output/dds_aru.Rds")
 
+
 # transform read counts
 vst <- varianceStabilizingTransformation(dds_aru, blind = FALSE)
 

@@ -23,7 +23,7 @@ gp <- ggplot(results_table,
                           label = gene_label)) +
     theme_minimal(base_size = 8) +
     xlab("Log2-fold change") +
-    ylab(expression(-log[10](italic(p)[adj]))) +
+    ylab(expression(-log[10](italic("p")["adj"]))) +
     scale_colour_manual(values = c("black", "red", "blue"),
                         guide = FALSE) +
     xlim(c(-10, 10)) +
