@@ -3,12 +3,12 @@ library(ggplot2)
 library(data.table)
 library(DESeq2)
 
-dds_aru <- readRDS("output/dds_aru.Rds")
+dds <- readRDS("output/dds_filtered.Rds")
 results_table <- readRDS("output/complete_results_table.Rds")
 sample_info <- fread("data/sample_id_mapping.csv")
 
 # transform read counts
-vst <- varianceStabilizingTransformation(dds_aru, blind = FALSE)
+vst <- varianceStabilizingTransformation(dds, blind = FALSE)
 
 # deseq pca
 rv <- rowVars(assay(vst))

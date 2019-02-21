@@ -5,7 +5,7 @@ library(DESeq2)
 sample_info <- fread("data/sample_id_mapping.csv")
 
 # load non-excel files
-datafiles_txt <- list.files(path = "data/modified",
+datafiles_txt <- list.files(path = "data",
                             pattern = "Chip.*.txt",
                             full.names = TRUE)
 names(datafiles_txt) <- sub(".bcmatrix.txt", "", basename(datafiles_txt))
@@ -31,6 +31,16 @@ data_with_info <- merge(molten_data,
 data_with_info[, donor := paste0("pt", donor)]
 data_with_info[treatment == "5-A-RU", treatment := "ARU"]
 data_with_info[treatment == "IL12+IL18", treatment := "Cyto"]
+
+# generate a list of genes to keep
+mean_cutoff <- 5
+max_cutoff <- 10 # this is crude, but you can use whatever you like
+keep_mean <- data_with_info[, mean(count), by = .(Gene, treatment)][
+    V1 > mean_cutoff, unique(Gene)]
+keep_genes <- keep_mean
+# keep_max <- data_with_info[, max(count), by = Gene][
+#     V1 > max_cutoff, unique(Gene)]
+# keep_genes <- union(keep_mean, keep_max)
 
 # generate sample table for DESeq2
 GenerateSampleTable <- function(count_data_with_info) {
@@ -70,12 +80,11 @@ GenerateDeseqObject <- function(count_data_with_info) {
 
 # split into table containing ARU and table for other comparisons and generate
 # deseq objects
-data_aru <- data_with_info[!donor == "pt40"]
-data_no_aru <- data_with_info[!treatment == "ARU"]
+dds <- GenerateDeseqObject(data_with_info)
 
-dds_aru <- GenerateDeseqObject(data_aru)
-dds_no_aru <- GenerateDeseqObject(data_no_aru)
+# filter the dds
+dds_filtered <- dds[keep_genes,]
 
 # save DESeq2 object
-saveRDS(dds_aru, file = "output/dds_aru.Rds")
-saveRDS(dds_no_aru, file = "output/dds_no_aru.Rds")
+saveRDS(dds, file = "output/dds.Rds")
+saveRDS(dds_filtered, file = "output/dds_filtered.Rds")

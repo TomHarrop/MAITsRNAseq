@@ -4,15 +4,15 @@ library(DESeq2)
 BiocParallel::register(BiocParallel::MulticoreParam(8))
 
 # load  objects
-dds_aru <- readRDS("output/dds_aru.Rds")
+dds <- readRDS("output/dds_filtered.Rds")
 sample_info <- fread("data/sample_id_mapping.csv")
 results_table <- fread("output/complete_results_table.csv")
 
 # run deseq
-dds_aru <- DESeq(dds_aru, parallel = TRUE)
+dds <- DESeq(dds, parallel = TRUE)
 
 # get count table
-count_data_wide <- data.table(counts(dds_aru, normalized = TRUE),
+count_data_wide <- data.table(counts(dds, normalized = TRUE),
                               keep.rownames = TRUE)
 setnames(count_data_wide, "rn", "gene_id")
 count_data_by_library <- melt(count_data_wide,
